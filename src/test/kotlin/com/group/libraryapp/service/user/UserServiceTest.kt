@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import java.util.*
 
 @SpringBootTest
 class UserServiceTest @Autowired constructor(
@@ -44,8 +45,8 @@ class UserServiceTest @Autowired constructor(
         // given
         userRepository.saveAll(
             listOf(
-                User("A", 20),
-                User("B", null)
+                User("A", 20, Collections.emptyList(), null),
+                User("B", null, Collections.emptyList(), null)
             )
         )
 
@@ -63,7 +64,7 @@ class UserServiceTest @Autowired constructor(
     fun updateUserNameTest() {
         // given
         val saveUser = userRepository.save(User("A", 20))
-        val request = UserUpdateRequest(saveUser.id, "B")
+        val request = UserUpdateRequest(saveUser.id!!, "B")
 
         // when
         userService.updateUserName(request)

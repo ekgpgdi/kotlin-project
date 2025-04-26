@@ -1,10 +1,10 @@
 package com.group.libraryapp.service.book
 
-import com.group.libraryapp.domain.book.JavaBook
+import com.group.libraryapp.domain.book.Book
 import com.group.libraryapp.domain.book.BookRepository
 import com.group.libraryapp.domain.user.User
+import com.group.libraryapp.domain.user.UserLoanHistory
 import com.group.libraryapp.domain.user.UserRepository
-import com.group.libraryapp.domain.user.loanhistory.UserLoanHistory
 import com.group.libraryapp.domain.user.loanhistory.UserLoanHistoryRepository
 import com.group.libraryapp.dto.book.request.BookLoanRequest
 import com.group.libraryapp.dto.book.request.BookRequest
@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import java.util.*
 
 @SpringBootTest
 class BookServiceTest @Autowired constructor(
@@ -50,8 +51,8 @@ class BookServiceTest @Autowired constructor(
     @DisplayName("책 대출이 정상 동작한다.")
     fun loanBookTest() {
         // given
-        bookRepository.save(JavaBook("A"))
-        val savedUser = userRepository.save(User("이다혜", 30))
+        bookRepository.save(Book("A", null))
+        val savedUser = userRepository.save(User("이다혜", 30, Collections.emptyList(), null))
         val request = BookLoanRequest("이다혜", "A")
 
         // when
@@ -69,16 +70,22 @@ class BookServiceTest @Autowired constructor(
     @DisplayName("책이 진작 대출되어 있다면, 신규 대출이 실패한다.")
     fun loanBookExceptionTest() {
         // given
-        bookRepository.save(JavaBook("A"))
+        bookRepository.save(Book("A", null))
         val user = userRepository.save(User("이다혜", 30))
-        userLoanHistoryRepository.save(UserLoanHistory(user, "A", false))
+        userLoanHistoryRepository.save(
+            UserLoanHistory(
+                user,
+                "A",
+                false
+            )
+        )
         val request = BookLoanRequest("이다혜", "A")
 
         // when & then
         assertThrows<IllegalArgumentException> {
             bookService.loanBook(request)
         }.apply {
-            assertThat(message).isEqualTo("진작 대출이 되어 있는 책입니다")
+            assertThat(message).isEqualTo("진작 대출되어 있는 책입니다")
         }
     }
 
@@ -87,7 +94,13 @@ class BookServiceTest @Autowired constructor(
     fun returnBookTest() {
         // given
         val user = userRepository.save(User("이다혜", 30))
-        userLoanHistoryRepository.save(UserLoanHistory(user, "A", false))
+        userLoanHistoryRepository.save(
+            UserLoanHistory(
+                user,
+                "A",
+                false
+            )
+        )
         val request = BookReturnRequest("이다혜", "A")
 
         // when
